@@ -8,6 +8,7 @@ const tests = [
     require('./variables-test.js'),
     require('./block-test.js'),
     require('./if-test.js'),
+    require('./while-test.js'),
 ];
 
 const eva = new Eva(new Environment({
@@ -19,6 +20,6 @@ const eva = new Eva(new Environment({
     VERSION: '0.1',
 }));
 
-tests.forEach(test => { test(eval); });
+tests.forEach(test => { test(eva); });
 
 console.log('All assertions passed!');
