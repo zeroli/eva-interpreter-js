@@ -73,20 +73,53 @@ class Eva {
             return result;
         }
 
+        // ------------------------------------------------------------
+        // Function declaration: (def square (x) (* x x))
+        if (exp[0] === 'def') {
+            const [_tag, name, params, body] = exp;
+            const fn = {
+                params,
+                body,
+                env,  // clousure, static bind
+            };
+            env.define(name, fn);
+            return fn;
+        }
         // -------------------------------------------------------------
         // Function calls:
         if (Array.isArray(exp)) {
             const fn = this.eval(exp[0], env);
-            const args = exp.slice(1).map(arg => this.eval(arg, env));
+            const args = exp
+                    .slice(1)
+                    .map(arg => this.eval(arg, env));
 
             // native functions:
             if (typeof fn === 'function') {
                 return fn(...args);
             }
             // user-defined function
-
+            // create a new environment, and put params as new envs
+            const activationRecord = {};
+            fn.params.forEach((param, index) => {
+                activationRecord[param] = args[index];
+            });
+            const activationEnv = new Environment(
+                activationRecord,
+                fn.env,  // trace up to parent scope when call at runtime
+                // if one function call already binds one variable with same name
+                // use that static bound variable!!!
+            );
+            return this._evalBody(fn.body, activationEnv);
         }
+
         throw `Unimplemented: ${JSON.stringify(exp)}`;
+    }
+
+    _evalBody(body, env) {
+        if (body[0] === 'begin') {
+            return this._evalBlock(body, env);
+        }
+        return this.eval(body, env);
     }
 
     _evalBlock(block, env) {
