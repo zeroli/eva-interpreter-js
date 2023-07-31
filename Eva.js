@@ -199,6 +199,15 @@ class Eva {
         }
 
         // -------------------------------------------------------------
+        // Module declaration: (module <name> <body>)
+        if (exp[0] === 'module') {
+            const [_tag, name, body] = exp;
+            const moduleEnv = new Environment({}, env);
+            this._evalBody(body, moduleEnv);
+            return env.define(name, moduleEnv);
+        }
+
+        // -------------------------------------------------------------
         // Function calls:
         if (Array.isArray(exp)) {
             const fn = this.eval(exp[0], env);
