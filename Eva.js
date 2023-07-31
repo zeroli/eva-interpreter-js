@@ -1,7 +1,9 @@
 const assert = require('assert');
+const fs = require('fs');
 
 const Environment = require('./Environment');
 const Transformer = require('./transform/Transformer');
+const evaParser = require('./parser/evaParser');
 
 /**
  * Eval interpreter.
@@ -205,6 +207,19 @@ class Eva {
             const moduleEnv = new Environment({}, env);
             this._evalBody(body, moduleEnv);
             return env.define(name, moduleEnv);
+        }
+
+        // -------------------------------------------------------------
+        // import module
+        if (exp[0] === 'import') {
+            const [_tag, name] = exp;
+            const moduleSrc = fs.readFileSync(
+                `${__dirname}/modules/${name}.eva`,
+                'utf-8',
+            );
+            const body = evaParser.parse(`(begin ${moduleSrc})`);
+            const moduleExp = ['module', name, body];
+            return this.eval(moduleExp, this.global);
         }
 
         // -------------------------------------------------------------
