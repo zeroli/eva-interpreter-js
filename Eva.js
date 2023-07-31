@@ -16,6 +16,16 @@ class Eva {
     }
 
     /**
+     * Evaluates global code wrapping into a block
+     */
+    evalGlobal(expressions) {
+        return this._evalBlock(
+            expressions,
+            this.global,
+        );
+    }
+
+    /**
      * Evaluats an expression in the given environment
      */
     eval(exp, env = this.global) {
@@ -153,6 +163,13 @@ class Eva {
             const classEnv = new Environment({}, parentEnv);
             this._evalBody(body, classEnv);
             return env.define(name, classEnv);
+        }
+
+        // -------------------------------------------------------------
+        // Super expression: (super <ClassName>)
+        if (exp[0] === 'super') {
+            const [_tag, className] = exp;
+            return this.eval(className, env).parent;
         }
 
         // -------------------------------------------------------------
